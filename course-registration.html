@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التسجيل في الدورة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1117;
+    --surface: #161b25;
+    --card: #1c2333;
+    --border: #2a3349;
+    --gold: #c9a84c;
+    --gold-light: #e8c96e;
+    --gold-dim: rgba(201,168,76,0.12);
+    --text: #e8eaf0;
+    --text-muted: #8892a4;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Background geometric pattern */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 15% 20%, rgba(201,168,76,0.06) 0%, transparent 50%),
+      radial-gradient(circle at 85% 80%, rgba(201,168,76,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .geo-pattern {
+    position: fixed;
+    top: 0; right: 0;
+    width: 400px; height: 400px;
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+    position: relative;
+    z-index: 1;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 18px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .header h1 {
+    font-size: clamp(28px, 5vw, 46px);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, #fff 0%, var(--gold-light) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .header p {
+    color: var(--text-muted);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  .divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    border-radius: 10px;
+    margin: 20px auto 0;
+  }
+
+  /* Card */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 620px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+
+  .card-top-bar {
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light), transparent);
+  }
+
+  /* Steps indicator */
+  .steps-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 28px 32px 0;
+  }
+
+  .step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .step-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--surface);
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step-circle.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-dim);
+    box-shadow: 0 0 20px rgba(201,168,76,0.2);
+  }
+
+  .step-circle.done {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(46,204,113,0.1);
+  }
+
+  .step-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+
+  .step-item.active .step-label { color: var(--gold); }
+  .step-item.done .step-label { color: var(--green); }
+
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    margin-bottom: 24px;
+    max-width: 80px;
+    transition: background 0.4s ease;
+    position: relative;
+    top: -12px;
+  }
+
+  .step-line.done { background: var(--green); }
+
+  /* Pledge section */
+  .pledge-section { padding: 32px; display: block; }
+  .form-section { padding: 32px; display: none; }
+  .success-section { padding: 32px; display: none; text-align: center; }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .section-title h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Pledge box */
+  .pledge-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    max-height: 340px;
+    overflow-y: auto;
+    line-height: 1.9;
+    font-size: 15px;
+    color: var(--text-muted);
+    scroll-behavior: smooth;
+  }
+
+  .pledge-box::-webkit-scrollbar { width: 5px; }
+  .pledge-box::-webkit-scrollbar-track { background: transparent; }
+  .pledge-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .pledge-box h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pledge-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    align-items: flex-start;
+  }
+
+  .pledge-num {
+    min-width: 26px;
+    height: 26px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Checkbox */
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+
+  .checkbox-row:hover { border-color: rgba(201,168,76,0.4); }
+
+  .custom-checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+
+  .custom-checkbox.checked {
+    background: var(--gold);
+  }
+
+  .custom-checkbox svg { display: none; }
+  .custom-checkbox.checked svg { display: block; }
+
+  .checkbox-row input[type="checkbox"] { display: none; }
+
+  .checkbox-label {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+    font-weight: 500;
+  }
+
+  /* Form fields */
+  .field-group {
+    display: grid;
+    gap: 18px;
+    margin-bottom: 24px;
+  }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+  @media (max-width: 500px) { .field-row { grid-template-columns: 1fr; } }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+  }
+
+  .field label span { color: var(--gold); margin-right: 2px; }
+
+  .field input,
+  .field select,
+  .field textarea {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s;
+    direction: rtl;
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder { color: #4a5568; }
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+  }
+
+  .field input.error { border-color: var(--red); }
+
+  .field select option { background: var(--card); }
+
+  .field textarea { resize: vertical; min-height: 90px; }
+
+  .error-msg {
+    font-size: 12px;
+    color: var(--red);
+    display: none;
+    margin-top: 2px;
+  }
+
+  .field.has-error .error-msg { display: block; }
+  .field.has-error input,
+  .field.has-error select { border-color: var(--red); }
+
+  /* Buttons */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    color: #0e1117;
+  }
+
+  .btn-gold:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(201,168,76,0.35);
+  }
+
+  .btn-gold:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  /* Loading spinner */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(14,17,23,0.3);
+    border-top-color: #0e1117;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  /* Success */
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(46,204,113,0.1);
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 24px;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+  }
+
+  .success-section h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .success-section p {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  /* Config notice */
+  .config-notice {
+    background: rgba(231,76,60,0.08);
+    border: 1px solid rgba(231,76,60,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 0 32px 24px;
+    font-size: 13px;
+    color: #e57373;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    z-index: 1;
+    position: relative;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes popIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+
+  .fade-in { animation: fadeIn 0.4s ease both; }
+
+  .footer-note {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 12px;
+    color: #3a4257;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* GEO SVG */
+  .geo-svg {
+    position: fixed;
+    bottom: -100px;
+    left: -100px;
+    width: 500px;
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- Background decoration -->
+<svg class="geo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <polygon points="100,10 190,55 190,145 100,190 10,145 10,55" fill="none" stroke="#c9a84c" stroke-width="1"/>
+  <polygon points="100,30 170,62 170,138 100,170 30,138 30,62" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+  <polygon points="100,50 150,75 150,125 100,150 50,125 50,75" fill="none" stroke="#c9a84c" stroke-width="0.5"/>
+</svg>
+
+<!-- Header -->
+<div class="header">
+  <div class="badge">✦ التسجيل مفتوح الآن</div>
+  <h1>سجّل في الدورة</h1>
+  <p>اقرأ شروط الالتزام بعناية، ثم أكمل بياناتك للانضمام</p>
+  <div class="divider"></div>
+</div>
+
+<!-- Config notice - يظهر إذا لم يُضبط الرابط -->
+<div class="config-notice" id="configNotice">
+  ⚠️ تنبيه: لم يتم ربط الموقع بـ Google Sheets بعد. اتبع الخطوات في الملف النصي المرفق لإكمال الإعداد.
+</div>
+
+<!-- Main Card -->
+<div class="card">
+  <div class="card-top-bar"></div>
+
+  <!-- Steps bar -->
+  <div class="steps-bar">
+    <div class="step-item active" id="step1Item">
+      <div class="step-circle active" id="step1Circle">١</div>
+      <span class="step-label">الالتزام</span>
+    </div>
+    <div class="step-line" id="stepLine"></div>
+    <div class="step-item" id="step2Item">
+      <div class="step-circle" id="step2Circle">٢</div>
+      <span class="step-label">البيانات</span>
+    </div>
+    <div class="step-line" id="stepLine2"></div>
+    <div class="step-item" id="step3Item">
+      <div class="step-circle" id="step3Circle">٣</div>
+      <span class="step-label">تم التسجيل</span>
+    </div>
+  </div>
+
+  <!-- STEP 1: Pledge -->
+  <div class="pledge-section" id="pledgeSection">
+    <div class="section-title">
+      <div class="section-icon">📋</div>
+      <h2>إقرار الالتزام</h2>
+    </div>
+
+    <div class="pledge-box">
+      <h3>شروط وأحكام الانضمام إلى الدورة</h3>
+      
+      <div class="pledge-item">
+        <div class="pledge-num">١</div>
+        <div>
+          <strong style="color: #e8eaf0;">الالتزام بالحضور المنتظم:</strong> أتعهد بالحضور في جميع جلسات الدورة في مواعيدها المحددة، وفي حال تعذّر عليّ ذلك سأُبلّغ المسؤولين مسبقاً.
+        </div>
+      </div>
+
+      <div class="pledge-item">
+        <div class="pledge-num">٢</div>
+        <div>
+          <strong style="color: #e8eaf0;">إتمام التكاليف والواجبات:</strong> أتعهد بإنجاز جميع التكاليف والمهام المطلوبة في مواعيدها المحددة دون تأخير، وإبداء جهد حقيقي في إتقانها.
+        </div>
+      </div>
+
+      <div class="pledge-item">
+        <div class="pledge-num">٣</div>
+        <div>
+          <strong style="color: #e8eaf0;">الاحترام والتفاعل الإيجابي:</strong> أتعهد بالتعامل باحترام مع المحاضرين وجميع المشاركين، والمساهمة ببيئة تعليمية إيجابية وبنّاءة.
+        </div>
+      </div>
+
+      <div class="pledge-item">
+        <div class="pledge-num">٤</div>
+        <div>
+          <strong style="color: #e8eaf0;">الجدية في التعلم:</strong> أتعهد بالاجتهاد والمثابرة طوال مدة الدورة وعدم التخلي عنها إلا لأسباب قاهرة بعد التواصل مع الإدارة.
+        </div>
+      </div>
+
+      <div class="pledge-item">
+        <div class="pledge-num">٥</div>
+        <div>
+          <strong style="color: #e8eaf0;">السرية والأمانة:</strong> أتعهد بعدم مشاركة المواد الدراسية أو المحتوى الخاص بالدورة مع أي طرف خارجي دون إذن مسبق من الإدارة.
+        </div>
+      </div>
+
+      <div class="pledge-item">
+        <div class="pledge-num">٦</div>
+        <div>
+          <strong style="color: #e8eaf0;">قبول الشروط كاملةً:</strong> بتسجيلي في هذه الدورة أُقرّ بقراءتي وفهمي لجميع هذه البنود وموافقتي عليها كاملةً، وأتحمّل المسؤولية الكاملة عن الالتزام بها.
+        </div>
+      </div>
+    </div>
+
+    <!-- Checkbox -->
+    <label class="checkbox-row" onclick="toggleCheck()">
+      <input type="checkbox" id="agreeCheck">
+      <div class="custom-checkbox" id="checkBox">
+        <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+          <path d="M1 5L5 9L12 1" stroke="#0e1117" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="checkbox-label">أؤكد أنني قرأت جميع الشروط والأحكام المذكورة أعلاه وأوافق على الالتزام بها بشكل كامل</span>
+    </label>
+
+    <button class="btn btn-gold" id="nextBtn" onclick="goToForm()" disabled>
+      متابعة للتسجيل ←
+    </button>
+  </div>
+
+  <!-- STEP 2: Form -->
+  <div class="form-section" id="formSection">
+    <div class="section-title">
+      <div class="section-icon">📝</div>
+      <h2>بيانات التسجيل</h2>
+    </div>
+
+    <div class="field-group">
+
+      <div class="field-row">
+        <div class="field" id="field-firstName">
+          <label>الاسم الأول <span>*</span></label>
+          <input type="text" id="firstName" placeholder="مثال: محمد">
+          <span class="error-msg">هذا الحقل مطلوب</span>
+        </div>
+        <div class="field" id="field-lastName">
+          <label>اسم العائلة <span>*</span></label>
+          <input type="text" id="lastName" placeholder="مثال: الأحمد">
+          <span class="error-msg">هذا الحقل مطلوب</span>
+        </div>
+      </div>
+
+      <div class="field" id="field-phone">
+        <label>رقم الهاتف <span>*</span></label>
+        <input type="tel" id="phone" placeholder="مثال: 0555123456" dir="ltr" style="text-align:right">
+        <span class="error-msg">أدخل رقم هاتف صحيح</span>
+      </div>
+
+      <div class="field" id="field-email">
+        <label>البريد الإلكتروني <span>*</span></label>
+        <input type="email" id="email" placeholder="example@email.com" dir="ltr" style="text-align:right">
+        <span class="error-msg">أدخل بريداً إلكترونياً صحيحاً</span>
+      </div>
+
+      <div class="field-row">
+        <div class="field" id="field-age">
+          <label>العمر <span>*</span></label>
+          <input type="number" id="age" placeholder="مثال: 20" min="10" max="80">
+          <span class="error-msg">أدخل عمراً صحيحاً</span>
+        </div>
+        <div class="field" id="field-gender">
+          <label>الجنس <span>*</span></label>
+          <select id="gender">
+            <option value="">-- اختر --</option>
+            <option value="ذكر">ذكر</option>
+            <option value="أنثى">أنثى</option>
+          </select>
+          <span class="error-msg">هذا الحقل مطلوب</span>
+        </div>
+      </div>
+
+      <div class="field" id="field-level">
+        <label>المستوى الدراسي / المهني</label>
+        <select id="level">
+          <option value="">-- اختر --</option>
+          <option value="طالب ثانوي">طالب ثانوي</option>
+          <option value="طالب جامعي">طالب جامعي</option>
+          <option value="خريج جامعي">خريج جامعي</option>
+          <option value="موظف">موظف</option>
+          <option value="أخرى">أخرى</option>
+        </select>
+      </div>
+
+      <div class="field" id="field-notes">
+        <label>ملاحظات إضافية (اختياري)</label>
+        <textarea id="notes" placeholder="أي معلومات أخرى تودّ إضافتها..."></textarea>
+      </div>
+
+    </div>
+
+    <button class="btn btn-outline" onclick="goBack()">← العودة لشروط الالتزام</button>
+    <button class="btn btn-gold" id="submitBtn" onclick="submitForm()">
+      <span id="submitText">إرسال التسجيل</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </div>
+
+  <!-- STEP 3: Success -->
+  <div class="success-section" id="successSection">
+    <div class="success-icon">✓</div>
+    <h2>تم تسجيلك بنجاح! 🎉</h2>
+    <p>شكراً لك على التسجيل. تم حفظ بياناتك وسيتم التواصل معك قريباً عبر رقم الهاتف أو البريد الإلكتروني المُدخل.</p>
+    <button class="btn btn-outline" onclick="resetForm()" style="max-width:240px; margin:0 auto;">
+      تسجيل شخص آخر
+    </button>
+  </div>
+
+</div>
+
+<div class="footer-note">جميع البيانات محفوظة وآمنة — لن تُشارك مع أي جهة خارجية</div>
+
+<script>
+  // ════════════════════════════════════════════════
+  //  ⚙️ الإعداد: ضع رابط Google Apps Script هنا
+  //  اتبع التعليمات في ملف "setup-guide.txt"
+  // ════════════════════════════════════════════════
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdA6WOsWW71L8ayPBbadgLVl3dnQLlRHxaXUgs6tUfgpfwBj7fsqUuEb5580reA-eCgA/exec";
+  // ════════════════════════════════════════════════
+
+  // Show/hide config notice
+  if (APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
+    document.getElementById('configNotice').style.display = 'none';
+  }
+
+  // Toggle checkbox
+  function toggleCheck() {
+    const cb = document.getElementById('agreeCheck');
+    const box = document.getElementById('checkBox');
+    const btn = document.getElementById('nextBtn');
+    cb.checked = !cb.checked;
+    box.classList.toggle('checked', cb.checked);
+    btn.disabled = !cb.checked;
+  }
+
+  // Go to form step
+  function goToForm() {
+    if (!document.getElementById('agreeCheck').checked) return;
+    document.getElementById('pledgeSection').style.display = 'none';
+    document.getElementById('formSection').style.display = 'block';
+    document.getElementById('formSection').classList.add('fade-in');
+
+    // Update steps
+    document.getElementById('step1Circle').className = 'step-circle done';
+    document.getElementById('step1Circle').textContent = '✓';
+    document.getElementById('step1Item').className = 'step-item done';
+    document.getElementById('stepLine').classList.add('done');
+    document.getElementById('step2Circle').className = 'step-circle active';
+    document.getElementById('step2Item').className = 'step-item active';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // Go back
+  function goBack() {
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('pledgeSection').style.display = 'block';
+    document.getElementById('pledgeSection').classList.add('fade-in');
+    document.getElementById('step1Circle').className = 'step-circle active';
+    document.getElementById('step1Circle').textContent = '١';
+    document.getElementById('step1Item').className = 'step-item active';
+    document.getElementById('stepLine').classList.remove('done');
+    document.getElementById('step2Circle').className = 'step-circle';
+    document.getElementById('step2Item').className = 'step-item';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // Validate field
+  function validateField(id, checkFn) {
+    const el = document.getElementById(id);
+    const fieldEl = document.getElementById('field-' + id);
+    if (!fieldEl) return true;
+    const val = el.value.trim();
+    if (!checkFn(val)) {
+      fieldEl.classList.add('has-error');
+      return false;
+    }
+    fieldEl.classList.remove('has-error');
+    return true;
+  }
+
+  // Submit form
+  async function submitForm() {
+    const fields = [
+      ['firstName', v => v.length >= 2],
+      ['lastName',  v => v.length >= 2],
+      ['phone',     v => /^[\d\s\+\-]{8,15}$/.test(v)],
+      ['email',     v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)],
+      ['age',       v => v >= 10 && v <= 80],
+      ['gender',    v => v !== ''],
+    ];
+
+    let valid = true;
+    fields.forEach(([id, fn]) => { if (!validateField(id, fn)) valid = false; });
+
+    if (!valid) return;
+
+    // Set loading state
+    const btn = document.getElementById('submitBtn');
+    const text = document.getElementById('submitText');
+    const spin = document.getElementById('spinner');
+    btn.disabled = true;
+    text.textContent = 'جاري الإرسال...';
+    spin.style.display = 'block';
+
+    const data = {
+      firstName: document.getElementById('firstName').value.trim(),
+      lastName:  document.getElementById('lastName').value.trim(),
+      phone:     document.getElementById('phone').value.trim(),
+      email:     document.getElementById('email').value.trim(),
+      age:       document.getElementById('age').value.trim(),
+      gender:    document.getElementById('gender').value,
+      level:     document.getElementById('level').value,
+      notes:     document.getElementById('notes').value.trim(),
+      timestamp: new Date().toLocaleString('ar-SA'),
+    };
+
+    try {
+      if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+        // Demo mode
+        await new Promise(r => setTimeout(r, 1200));
+      } else {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+      }
+      showSuccess();
+    } catch (err) {
+      alert('حدث خطأ في الإرسال. يرجى المحاولة مرة أخرى.');
+      btn.disabled = false;
+      text.textContent = 'إرسال التسجيل';
+      spin.style.display = 'none';
+    }
+  }
+
+  function showSuccess() {
+    document.getElementById('formSection').style.display = 'none';
+    document.getElementById('successSection').style.display = 'block';
+    document.getElementById('successSection').classList.add('fade-in');
+
+    document.getElementById('step2Circle').className = 'step-circle done';
+    document.getElementById('step2Circle').textContent = '✓';
+    document.getElementById('step2Item').className = 'step-item done';
+    document.getElementById('stepLine2').classList.add('done');
+    document.getElementById('step3Circle').className = 'step-circle active';
+    document.getElementById('step3Item').className = 'step-item active';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  function resetForm() {
+    document.getElementById('successSection').style.display = 'none';
+    document.getElementById('pledgeSection').style.display = 'block';
+    document.getElementById('pledgeSection').classList.add('fade-in');
+    document.getElementById('agreeCheck').checked = false;
+    document.getElementById('checkBox').classList.remove('checked');
+    document.getElementById('nextBtn').disabled = true;
+    ['firstName','lastName','phone','email','age'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('gender').value = '';
+    document.getElementById('level').value = '';
+    document.getElementById('notes').value = '';
+    ['firstName','lastName','phone','email','age','gender'].forEach(id => {
+      const f = document.getElementById('field-'+id);
+      if(f) f.classList.remove('has-error');
+    });
+
+    // Reset steps
+    document.getElementById('step1Circle').className = 'step-circle active';
+    document.getElementById('step1Circle').textContent = '١';
+    document.getElementById('step1Item').className = 'step-item active';
+    document.getElementById('step2Circle').className = 'step-circle';
+    document.getElementById('step2Circle').textContent = '٢';
+    document.getElementById('step2Item').className = 'step-item';
+    document.getElementById('step3Circle').className = 'step-circle';
+    document.getElementById('step3Item').className = 'step-item';
+    document.getElementById('stepLine').classList.remove('done');
+    document.getElementById('stepLine2').classList.remove('done');
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitText').textContent = 'إرسال التسجيل';
+    document.getElementById('spinner').style.display = 'none';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+
+  // Live validation on blur
+  ['firstName','lastName'].forEach(id => {
+    document.getElementById(id)?.addEventListener('blur', () =>
+      validateField(id, v => v.length >= 2));
+  });
+  document.getElementById('phone')?.addEventListener('blur', () =>
+    validateField('phone', v => /^[\d\s\+\-]{8,15}$/.test(v)));
+  document.getElementById('email')?.addEventListener('blur', () =>
+    validateField('email', v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)));
+  document.getElementById('age')?.addEventListener('blur', () =>
+    validateField('age', v => v >= 10 && v <= 80));
+</script>
+</body>
+</html>
